@@ -1,6 +1,8 @@
-# Forms Server
+# MailPocket
 
-An extremely lightweight server written in Go to collect email form submissions. This project provides two independent server implementations:
+*MailPocket* is inspired by the idea of a pocket—a small, handy container designed to securely hold valuable items. In this case, it’s an extremely lightweight “pocket” for safely collecting email form submissions written in Go.
+
+This project provides two independent server implementations:
 
 1. **Batched Write Server**: A dependency-free server that stores emails in a CSV file.
 2. **SQLite Server**: A server that uses SQLite for reliable and structured email storage.
