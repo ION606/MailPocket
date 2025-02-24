@@ -1,0 +1,19 @@
+FROM golang:1.23.6-alpine
+
+WORKDIR /app
+
+RUN mkdir -p /app/data
+
+COPY batched-server/ ./
+COPY shared/ ./shared/
+
+RUN go mod edit -replace shared=/app/shared
+
+# Download dependencies
+RUN go mod tidy
+RUN go mod download
+
+RUN go build -o batched-server .
+
+EXPOSE 15521
+CMD ["./batched-server", "15521"]

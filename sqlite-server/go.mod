@@ -14,4 +14,7 @@ require (
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.8.2 // indirect
 	modernc.org/sqlite v1.35.0 // indirect
+	shared v0.0.0-00010101000000-000000000000 // indirect
 )
+
+replace shared => ../shared

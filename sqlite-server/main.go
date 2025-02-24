@@ -5,21 +5,15 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
-	"os"
+	"path/filepath"
 	"strings"
-
+	"shared"
 	_ "modernc.org/sqlite"
 )
 
 func main() {
-	var PORT string
-	if len(os.Args) > 1 {
-		PORT = os.Args[1]
-	} else {
-		PORT = "15521"
-	}
-
-	db, _ := sql.Open("sqlite", "emails.db")
+	PORT, dbdir := shared.GetArgs()
+	db, _ := sql.Open("sqlite", filepath.Join(dbdir, "emails.db"))
 	db.Exec(`CREATE TABLE IF NOT EXISTS emails (
 		email TEXT PRIMARY KEY,
 		created TIMESTAMP DEFAULT CURRENT_TIMESTAMP

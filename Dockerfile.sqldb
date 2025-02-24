@@ -1,0 +1,19 @@
+FROM golang:1.23.6-alpine
+
+WORKDIR /app
+
+RUN mkdir -p /app/data
+
+COPY sqlite-server/ ./
+COPY shared/ ./shared/
+
+RUN go mod edit -replace shared=/app/shared
+
+# Download dependencies
+RUN go mod tidy
+RUN go mod download
+
+RUN go build -o sqlite-server .
+
+EXPOSE 15521
+CMD ["./sqlite-server", "15521"]

@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"path/filepath"
+	"shared"
 	"strings"
 	"sync"
 	"time"
@@ -14,6 +16,9 @@ import (
 var (
 	emailQueue []string
 	queueLock  sync.Mutex
+	dbdir      string
+	PORT       string
+	fpath      string
 )
 
 func saveEmails() {
@@ -25,11 +30,11 @@ func saveEmails() {
 	}
 
 	fileExists := true
-	if _, err := os.Stat("emails.csv"); os.IsNotExist(err) {
+	if _, err := os.Stat(fpath); os.IsNotExist(err) {
 		fileExists = false
 	}
 
-	f, err := os.OpenFile("emails.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(fpath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		log.Println("Failed to open file:", err)
 		return
@@ -101,14 +106,9 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "data received"})
 }
 
-
 func main() {
-	var PORT string
-	if len(os.Args) > 1 {
-		PORT = os.Args[1]
-	} else {
-		PORT = "15521"
-	}
+	PORT, dbdir = shared.GetArgs()
+	fpath = filepath.Join(dbdir, "emails.csv")
 
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

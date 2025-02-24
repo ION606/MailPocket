@@ -1,6 +1,6 @@
 #!/bin/bash
 
-SERVER_URL="http://localhost:3000"
+SERVER_URL="http://localhost:15521"
 
 test_server_running() {
     echo "Testing if the server is running..."
