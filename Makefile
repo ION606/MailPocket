@@ -1,10 +1,12 @@
+PORT=15521
+
 .PHONY: run-batched run-sqlite setup-sqlite
 
 run-batched:
-	cd batched-server && go run main.go
+	cd batched-server && go run main.go $(PORT)
 
 run-sqlite: setup-sqlite
-	cd sqlite-server && go run main.go
+	cd sqlite-server && go run main.go $(PORT)
 
 setup-sqlite:
 	@if [ ! -f sqlite-server/go.mod ]; then \

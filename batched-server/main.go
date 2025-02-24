@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/csv"
 	"encoding/json"
+	"log"
 	"net/http"
 	"os"
 	"strings"
@@ -10,13 +11,10 @@ import (
 	"time"
 )
 
-const PORT = ":3000"
-
 var (
 	emailQueue []string
 	queueLock  sync.Mutex
 )
-
 
 func saveEmails() {
 	queueLock.Lock()
@@ -33,6 +31,7 @@ func saveEmails() {
 
 	f, err := os.OpenFile("emails.csv", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
+		log.Println("Failed to open file:", err)
 		return
 	}
 	defer f.Close()
@@ -40,22 +39,24 @@ func saveEmails() {
 	writer := csv.NewWriter(f)
 	defer writer.Flush()
 
-	// write header if file is new
+	// Write header if file is new
 	if !fileExists {
 		if err := writer.Write([]string{"email", "timestamp"}); err != nil {
+			log.Println("Failed to write header:", err)
 			return
 		}
 	}
 
-	// write each email with timestamp
+	// Write each email with timestamp
 	for _, email := range emailQueue {
 		timestamp := time.Now().Format(time.RFC3339)
 		if err := writer.Write([]string{email, timestamp}); err != nil {
+			log.Println("Failed to write email:", err)
 			return
 		}
 	}
 
-	// clear queue
+	// Clear queue
 	emailQueue = emailQueue[:0]
 }
 
@@ -63,17 +64,17 @@ func saveEmails() {
 func init() {
 	go func() {
 		for {
-			time.Sleep(5 * time.Second);
-			queueLock.Lock();
-			hasEmails := len(emailQueue) > 0;
-			queueLock.Unlock();
+			time.Sleep(5 * time.Second)
+			queueLock.Lock()
+			hasEmails := len(emailQueue) > 0
+			queueLock.Unlock()
 			if hasEmails {
-				saveEmails();
+				log.Println("Flushing email queue...")
+				saveEmails()
 			}
 		}
-	}();	
+	}()
 }
-
 
 func submitHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "POST" {
@@ -102,10 +103,19 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 
 
 func main() {
+	var PORT string
+	if len(os.Args) > 1 {
+		PORT = os.Args[1]
+	} else {
+		PORT = "15521"
+	}
+
 	http.HandleFunc("/submit", submitHandler)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("Batched Write Server is running"))
 	})
-	http.ListenAndServe(PORT, nil)
+
+	log.Println("Starting server on port", PORT)
+	log.Fatal(http.ListenAndServe(":"+PORT, nil))
 }

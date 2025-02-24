@@ -3,15 +3,22 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	_ "modernc.org/sqlite"
 )
 
-const PORT = ":3000"
-
 func main() {
+	var PORT string
+	if len(os.Args) > 1 {
+		PORT = os.Args[1]
+	} else {
+		PORT = "15521"
+	}
+
 	db, _ := sql.Open("sqlite", "emails.db")
 	db.Exec(`CREATE TABLE IF NOT EXISTS emails (
 		email TEXT PRIMARY KEY,
@@ -40,5 +47,6 @@ func main() {
 		w.Write([]byte("SQLite Write Server is running"))
 	})
 
-	http.ListenAndServe(PORT, nil)
+	log.Println("Starting server on port", PORT)
+	log.Fatal(http.ListenAndServe(":"+PORT, nil))
 }
